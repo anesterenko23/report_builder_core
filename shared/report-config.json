@@ -1,16 +1,11 @@
 {
-  "templateVersion":"daily-v2","strictMatchRequired":true,
+  "templateVersion":"daily-v3","strictMatchRequired":true,
+  "dataModel":{"join":{"leftSource":"disputes","leftField":"Order ID","rightSource":"transactions","rightField":"transaction_identifier"},"calculatedFields":[]},
   "merchantAliases":{"Omno":["Omno","Omno/UPGaming Santedа","Omno/UPGaming Santeda"]},
   "sheets":[
-    {"id":"overview","name":"Обзор","type":"overview","enabled":true,"editable":false},
-    {"id":"cases","name":"Кейсы","type":"cases","enabled":true,"editable":false},
-    {"id":"comparison","name":"Сравнение","type":"comparison","enabled":true,"editable":false},
-    {"id":"summary","name":"Итог","type":"summary","enabled":true,"editable":false},
+    {"id":"overview","name":"Обзор","type":"overview","enabled":true,"editable":false},{"id":"cases","name":"Кейсы","type":"cases","enabled":true,"editable":false},{"id":"comparison","name":"Сравнение","type":"comparison","enabled":true,"editable":false},{"id":"summary","name":"Итог","type":"summary","enabled":true,"editable":false},
     {"id":"transactions","name":"Транзакции (детализация)","type":"table","enabled":true,"editable":true,"columns":[
       {"key":"pm","label":"Transaction ID","source":"dispute.pm","format":"text"},{"key":"reference","label":"Референс","source":"transaction.reference","format":"text"},{"key":"creationDate","label":"Дата транзакции","source":"transaction.creationDate","format":"datetime"},{"key":"disputeDate","label":"Дата подачи диспута","source":"dispute.disputeDate","format":"datetime"},{"key":"merchant","label":"Мерчант","source":"transaction.merchantName","format":"text"},{"key":"project","label":"Проект","source":"transaction.projectName","format":"text"},{"key":"mid","label":"MID","source":"transaction.midName","format":"text"},{"key":"provider","label":"Провайдер","source":"dispute.provider","format":"text"},{"key":"method","label":"Метод","source":"transaction.method","format":"text"},{"key":"email","label":"Email","source":"transaction.email","format":"text"},{"key":"name","label":"ФИО","source":"computed.fullName","format":"text"},{"key":"holder","label":"Держатель карты","source":"transaction.cardHolder","format":"text"},{"key":"country","label":"Страна клиента","source":"transaction.country","format":"text"},{"key":"amount","label":"Сумма, EUR","source":"transaction.amount","format":"currency"},{"key":"disputeAmount","label":"Сумма диспута (провайдер)","source":"dispute.providerDisputeAmount","format":"currency"},{"key":"disputeCurrency","label":"Валюта диспута","source":"dispute.providerCurrency","format":"text"},{"key":"disputeEur","label":"Сумма диспута, EUR","source":"computed.disputeEur","format":"currency"},{"key":"reason","label":"Причина диспута","source":"dispute.reason","format":"text"},{"key":"reasonCode","label":"Код причины","source":"dispute.reasonCode","format":"text"},{"key":"pan","label":"Card mask","source":"transaction.pan","format":"text"},{"key":"brand","label":"Бренд карты","source":"transaction.cardBrand","format":"text"},{"key":"cardType","label":"Тип карты","source":"transaction.cardType","format":"text"},{"key":"bank","label":"Банк-эмитент","source":"transaction.cardBankName","format":"text"},{"key":"cardCountry","label":"Страна карты","source":"transaction.cardCountry","format":"text"},{"key":"panId","label":"pan_id","source":"transaction.panId","format":"text"},{"key":"customerId","label":"customer_id","source":"transaction.customerId","format":"text"},{"key":"comment","label":"Комментарий","source":"computed.comment","format":"text"}
-    ]},
-    {"id":"clients","name":"Клиенты (детализация)","type":"clients","enabled":true,"editable":false},
-    {"id":"history","name":"История по кейсам","type":"history","enabled":true,"editable":false}
-  ],
-  "customSheets":[]
+    ]},{"id":"clients","name":"Клиенты (детализация)","type":"clients","enabled":true,"editable":false},{"id":"history","name":"История по кейсам","type":"history","enabled":true,"editable":false}
+  ],"customSheets":[]
 }
