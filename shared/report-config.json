@@ -1,17 +1,42 @@
 {
   "templateVersion": "daily-v1",
   "templateFile": "daily-report-v1.xlsx",
-  "join": {
-    "disputeKeys": ["Order ID", "order_id", "transaction_identifier", "PM ID", "pm_id"],
-    "transactionKeys": ["transaction_identifier", "Order ID", "order_id", "PM ID", "pm_id"]
-  },
+  "strictMatchRequired": true,
   "sheets": [
-    {"name": "Обзор", "type": "overview", "enabled": true},
-    {"name": "Кейсы", "type": "cases", "enabled": true},
-    {"name": "Сравнение", "type": "comparison", "enabled": true},
-    {"name": "Итог", "type": "summary", "enabled": true},
-    {"name": "Транзакции (детализация)", "type": "transactions", "enabled": true},
-    {"name": "Клиенты (детализация)", "type": "clients", "enabled": true},
-    {"name": "История по кейсам", "type": "history", "enabled": true}
+    {"id":"overview","name":"Обзор","type":"overview","enabled":true,"editable":false},
+    {"id":"cases","name":"Кейсы","type":"cases","enabled":true,"editable":false},
+    {"id":"comparison","name":"Сравнение с предыдущим отчётом","type":"comparison","enabled":true,"editable":false},
+    {"id":"summary","name":"Итог","type":"summary","enabled":true,"editable":false},
+    {"id":"transactions","name":"Транзакции (детализация)","type":"table","enabled":true,"editable":true,"columns":[
+      {"key":"pm","label":"Transaction ID","source":"dispute.pm"},
+      {"key":"reference","label":"Референс","source":"transaction.reference"},
+      {"key":"createdAt","label":"Дата транзакции","source":"transaction.createdAt","format":"datetime"},
+      {"key":"disputeDate","label":"Дата подачи диспута","source":"dispute.disputeDate","format":"datetime"},
+      {"key":"merchant","label":"Мерчант","source":"transaction.merchantName"},
+      {"key":"project","label":"Проект","source":"transaction.projectName"},
+      {"key":"mid","label":"MID","source":"transaction.midName"},
+      {"key":"provider","label":"Провайдер","source":"dispute.provider"},
+      {"key":"method","label":"Метод","source":"transaction.method"},
+      {"key":"email","label":"Email","source":"transaction.email"},
+      {"key":"name","label":"ФИО","source":"computed.fullName"},
+      {"key":"holder","label":"Держатель карты","source":"transaction.cardHolder"},
+      {"key":"country","label":"Страна клиента","source":"transaction.country"},
+      {"key":"amount","label":"Сумма, EUR","source":"transaction.amount","format":"currency"},
+      {"key":"disputeAmount","label":"Сумма диспута (провайдер)","source":"dispute.providerDisputeAmount","format":"number"},
+      {"key":"disputeCurrency","label":"Валюта диспута","source":"dispute.providerCurrency"},
+      {"key":"disputeEur","label":"Сумма диспута, EUR","source":"computed.disputeEur","format":"currency"},
+      {"key":"reason","label":"Причина диспута","source":"dispute.reason"},
+      {"key":"reasonCode","label":"Код причины","source":"dispute.reasonCode"},
+      {"key":"pan","label":"Card mask","source":"transaction.pan"},
+      {"key":"brand","label":"Бренд карты","source":"transaction.cardBrand"},
+      {"key":"cardType","label":"Тип карты","source":"transaction.cardType"},
+      {"key":"bank","label":"Банк-эмитент","source":"transaction.cardBankName"},
+      {"key":"cardCountry","label":"Страна карты","source":"transaction.cardCountry"},
+      {"key":"panId","label":"pan_id","source":"transaction.panId"},
+      {"key":"customerId","label":"customer_id","source":"transaction.customerId"},
+      {"key":"comment","label":"Комментарий","source":"computed.comment"}
+    ]},
+    {"id":"clients","name":"Клиенты (детализация)","type":"clients","enabled":true,"editable":true},
+    {"id":"history","name":"История по кейсам","type":"history","enabled":true,"editable":false}
   ]
 }
