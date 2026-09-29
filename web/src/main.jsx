@@ -1,69 +1,13 @@
-import React, { useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import './styles.css';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-function App() {
-  const [disputes, setDisputes] = useState(null);
-  const [transactions, setTransactions] = useState(null);
-  const [date, setDate] = useState(new Date().toISOString().slice(0,10));
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const form = () => {
-    const fd = new FormData();
-    fd.append('disputes', disputes);
-    fd.append('transactions', transactions);
-    fd.append('date', date);
-    return fd;
-  };
-
-  async function validate() {
-    setBusy(true); setError('');
-    try {
-      const r = await fetch(`${API}/api/validate`, { method:'POST', body: form() });
-      const json = await r.json();
-      if (!r.ok) throw new Error(json.error || 'Validation failed');
-      setResult(json);
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
-  }
-
-  async function generate() {
-    setBusy(true); setError('');
-    try {
-      const r = await fetch(`${API}/api/generate`, { method:'POST', body: form() });
-      if (!r.ok) { const json = await r.json(); throw new Error(json.error || 'Generation failed'); }
-      const blob = await r.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `chargeback_report_${date.replaceAll('-','_')}.xlsx`; a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
-  }
-
-  const ready = disputes && transactions;
-  return <main>
-    <header><h1>Report Builder Core</h1><p>Chargeback report MVP</p></header>
-    <section className="card">
-      <h2>Generate daily report</h2>
-      <label>Report date<input type="date" value={date} onChange={e=>setDate(e.target.value)} /></label>
-      <label>Disputes merged (.xlsx)<input type="file" accept=".xlsx" onChange={e=>setDisputes(e.target.files[0] || null)} /></label>
-      <label>Transactions ID (.csv)<input type="file" accept=".csv" onChange={e=>setTransactions(e.target.files[0] || null)} /></label>
-      <div className="actions"><button disabled={!ready || busy} onClick={validate}>Validate files</button><button disabled={!ready || busy} onClick={generate}>Generate report</button></div>
-      {error && <div className="error">{error}</div>}
-    </section>
-    {result && <>
-      <section className="grid">
-        <Stat name="Disputes" value={result.qa.disputesLoaded}/><Stat name="Matched" value={result.qa.matched}/><Stat name="Missing" value={result.qa.unmatched}/><Stat name="Match rate" value={`${result.qa.matchRate}%`}/><Stat name="Amount" value={`€${result.metrics.totalTransactionAmount.toFixed(2)}`}/><Stat name="Clients" value={result.metrics.uniqueClients}/>
-      </section>
-      {(result.qa.unmatchedPm?.length > 0 || result.qa.duplicateDisputePm?.length > 0) && <section className="card warning"><h2>QA warnings</h2>{result.qa.unmatchedPm?.length>0 && <p>Unmatched PM: {result.qa.unmatchedPm.join(', ')}</p>}{result.qa.duplicateDisputePm?.length>0 && <p>Duplicate dispute PM: {result.qa.duplicateDisputePm.map(x=>`${x.pm} (${x.count})`).join(', ')}</p>}</section>}
-      <section className="card"><h2>Providers</h2><Table rows={result.providers}/></section>
-      <section className="card"><h2>Merchants</h2><Table rows={result.merchants}/></section>
-    </>}
-  </main>;
-}
-function Stat({name,value}) { return <div className="stat"><span>{name}</span><strong>{value}</strong></div> }
-function Table({rows}) { return <table><thead><tr><th>Name</th><th>CB</th><th>Amount</th><th>Clients</th></tr></thead><tbody>{rows.map(r=><tr key={r.name}><td>{r.name}</td><td>{r.count}</td><td>{r.amount.toFixed(2)}</td><td>{r.uniqueClients}</td></tr>)}</tbody></table> }
-
+import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import'./styles.css';
+const API=import.meta.env.VITE_API_URL||'http://localhost:3001';
+function App(){const[tab,setTab]=useState('generate'),[disputes,setDisputes]=useState(null),[transactions,setTransactions]=useState(null),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[result,setResult]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[config,setConfig]=useState(null),[saved,setSaved]=useState('');useEffect(()=>{fetch(`${API}/api/config`).then(r=>r.json()).then(setConfig).catch(e=>setError(e.message))},[]);
+const form=()=>{const f=new FormData();f.append('disputes',disputes);f.append('transactions',transactions);f.append('date',date);return f};
+async function validate(){setBusy(true);setError('');try{const r=await fetch(`${API}/api/validate`,{method:'POST',body:form()}),j=await r.json();if(!r.ok)throw Error(j.error);setResult(j)}catch(e){setError(e.message)}finally{setBusy(false)}}
+async function generate(){setBusy(true);setError('');try{const r=await fetch(`${API}/api/generate`,{method:'POST',body:form()});if(!r.ok){const j=await r.json();throw Error(j.error)}const b=await r.blob(),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`chargeback_report_${date.replaceAll('-','_')}.xlsx`;a.click();URL.revokeObjectURL(u)}catch(e){setError(e.message)}finally{setBusy(false)}}
+async function saveConfig(){setSaved('');const r=await fetch(`${API}/api/config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),j=await r.json();if(!r.ok)return setError(j.error);setSaved('Saved')}
+function updateSheet(id,patch){setConfig({...config,sheets:config.sheets.map(s=>s.id===id?{...s,...patch}:s)})}function updateCol(si,ci,patch){const sheets=config.sheets.map((s,i)=>i===si?{...s,columns:s.columns.map((c,j)=>j===ci?{...c,...patch}:c)}:s);setConfig({...config,sheets})}function addCol(si){const sheets=config.sheets.map((s,i)=>i===si?{...s,columns:[...(s.columns||[]),{key:`field_${Date.now()}`,label:'Новое поле',source:'transaction.',format:'text'}]}:s);setConfig({...config,sheets})}function delCol(si,ci){setConfig({...config,sheets:config.sheets.map((s,i)=>i===si?{...s,columns:s.columns.filter((_,j)=>j!==ci)}:s)})}
+return <main><header><div><h1>Report Builder Core</h1><p>MVP · deterministic calculations + Excel template</p></div><nav><button className={tab==='generate'?'active':''}onClick={()=>setTab('generate')}>Generate</button><button className={tab==='builder'?'active':''}onClick={()=>setTab('builder')}>Report Builder</button></nav></header>{error&&<div className="card error">{error}</div>}
+{tab==='generate'?<><section className="card"><h2>Daily report</h2><label>Report date<input type="date"value={date}onChange={e=>setDate(e.target.value)}/></label><label>disputes_merged.xlsx<input type="file"accept=".xlsx"onChange={e=>setDisputes(e.target.files[0]||null)}/></label><label>transactions_id.csv<input type="file"accept=".csv"onChange={e=>setTransactions(e.target.files[0]||null)}/></label><div className="actions"><button disabled={!disputes||!transactions||busy}onClick={validate}>Validate</button><button disabled={!disputes||!transactions||busy||result?.qa?.matchRate!==100}onClick={generate}>Generate XLSX</button></div></section>{result&&<><section className="grid"><Stat n="Disputes"v={result.qa.disputesLoaded}/><Stat n="Matched"v={`${result.qa.matched}/${result.qa.disputesLoaded}`}/><Stat n="Match rate"v={`${result.qa.matchRate}%`}/><Stat n="Amount"v={`€${result.metrics.totalTransactionAmount.toFixed(2)}`}/><Stat n="Dispute amount"v={`€${result.metrics.totalProviderDisputeAmount.toFixed(2)}`}/><Stat n="Clients"v={result.metrics.uniqueClients}/></section>{result.qa.matchRate!==100&&<section className="card warning"><h2>QA failed</h2><p>Unmatched: {result.qa.unmatchedPm.join(', ')||'—'}</p><p>Missing PM rows: {result.qa.missingPmRows.join(', ')||'—'}</p></section>}<section className="card"><h2>Providers</h2><Table rows={result.providers}/></section><section className="card"><h2>Merchants</h2><Table rows={result.merchants}/></section></>}</>:<Builder config={config}updateSheet={updateSheet}updateCol={updateCol}addCol={addCol}delCol={delCol}save={saveConfig}saved={saved}/>}</main>}
+function Builder({config,updateSheet,updateCol,addCol,delCol,save,saved}){if(!config)return <section className="card">Loading…</section>;return <><section className="card"><div className="row"><div><h2>Report structure</h2><p className="muted">27.09 remains the visual master template. Here you control which sections are enabled and the transaction-detail columns.</p></div><button onClick={save}>Save config</button></div>{saved&&<p>{saved}</p>}</section>{config.sheets.map((s,si)=><section className="card"key={s.id}><div className="row"><div><strong>{s.name}</strong><div className="muted">{s.type}</div></div><label className="toggle"><input type="checkbox"checked={s.enabled}onChange={e=>updateSheet(s.id,{enabled:e.target.checked})}/> enabled</label></div>{s.columns&&<div className="columns"><div className="colhead"><span>Column</span><span>Source</span><span>Format</span><span></span></div>{s.columns.map((c,ci)=><div className="colrow"key={c.key}><input value={c.label}onChange={e=>updateCol(si,ci,{label:e.target.value})}/><input value={c.source}onChange={e=>updateCol(si,ci,{source:e.target.value})}/><select value={c.format||'text'}onChange={e=>updateCol(si,ci,{format:e.target.value})}><option>text</option><option>number</option><option>currency</option><option>datetime</option></select><button className="ghost"onClick={()=>delCol(si,ci)}>×</button></div>)}<button className="secondary"onClick={()=>addCol(si)}>+ Add column</button></div>}</section>)}</>}
+function Stat({n,v}){return <div className="stat"><span>{n}</span><strong>{v}</strong></div>}function Table({rows}){return <table><thead><tr><th>Name</th><th>CB</th><th>Amount</th><th>Dispute</th><th>Clients</th></tr></thead><tbody>{rows.map(r=><tr key={r.name}><td>{r.name}</td><td>{r.count}</td><td>{r.amount.toFixed(2)}</td><td>{r.disputeAmount.toFixed(2)}</td><td>{r.uniqueClients}</td></tr>)}</tbody></table>}
 createRoot(document.getElementById('root')).render(<App/>);
