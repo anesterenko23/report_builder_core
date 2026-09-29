@@ -1,0 +1,17 @@
+{
+  "templateVersion": "daily-v1",
+  "templateFile": "daily-report-v1.xlsx",
+  "join": {
+    "disputeKeys": ["Order ID", "order_id", "transaction_identifier", "PM ID", "pm_id"],
+    "transactionKeys": ["transaction_identifier", "Order ID", "order_id", "PM ID", "pm_id"]
+  },
+  "sheets": [
+    {"name": "Обзор", "type": "overview", "enabled": true},
+    {"name": "Кейсы", "type": "cases", "enabled": true},
+    {"name": "Сравнение", "type": "comparison", "enabled": true},
+    {"name": "Итог", "type": "summary", "enabled": true},
+    {"name": "Транзакции (детализация)", "type": "transactions", "enabled": true},
+    {"name": "Клиенты (детализация)", "type": "clients", "enabled": true},
+    {"name": "История по кейсам", "type": "history", "enabled": true}
+  ]
+}
